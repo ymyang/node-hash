@@ -46,6 +46,22 @@ function _md5sum(file) {
     });
 }
 
+function _crc32(file) {
+    return new Promise(function(resolve, reject) {
+        var crc = CRC32_XINIT;
+        var s = fs.createReadStream(file);
+        s.on('data', function(d) {
+            crc = crc32(d, crc);
+        });
+        s.on('end', function() {
+            resolve(crc32_final(crc));
+        });
+        s.on('error', function(err) {
+            reject(err);
+        });
+    });
+}
+
 const CRC32_XINIT = 0xFFFFFFFF;
 const CRC32_XOROT = 0xFFFFFFFF;
 
@@ -116,13 +132,14 @@ const  CRC_TABLE = [
     0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D
 ];
 
-function _crc32(buf) {
-    var crc = CRC32_XINIT;
+function crc32(buf, previous) {
+    previous = previous || CRC32_XINIT;
+    var crc = previous;
     for (var i = 0; i < buf.length; i++) {
         var byte = buf[i];
         crc = CRC_TABLE[(crc ^ byte) & 0xFF] ^ (crc >>> 8);
     }
-    return crc32_final(crc);
+    return crc;
 }
 
 function crc32_final(crc) {

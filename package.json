@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/ymyang/node-crc32/issues"
   },
-  "homepage": "https://github.com/ymyang/node-crc32#readme"
+  "homepage": "https://github.com/ymyang/node-crc32#readme",
+  "dependencies": {
+    "bluebird": "^2.9.34"
+  }
 }
