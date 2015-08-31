@@ -1,10 +1,50 @@
 /**
  * Created by yang on 2015/8/31.
  */
+var crypto = require('crypto');
+var fs = require('fs');
+var spawn = require('child_process').spawn;
+var Promise = require('bluebird');s
 
 module.exports = {
+    md5: _md5,
+    md5sum: _md5sum,
     crc32: _crc32
 };
+
+function _md5(file) {
+    return new Promise(function(resolve, reject) {
+        var hash = crypto.createHash('md5');
+        var s = fs.createReadStream(file);
+        s.on('data', function(d) {
+            hash.update(d);
+        });
+        s.on('end', function() {
+            resolve(hash.digest('hex'));
+        });
+        s.on('error', function(err) {
+            reject(err);
+        });
+    });
+}
+
+function _md5sum(file) {
+    return new Promise(function(resolve, reject) {
+        var p = spawn('md5sum', [file]);
+        p.stdout.on('data', function(d) {
+            console.log('stdout-data:', d);
+            var str = d.toString('utf8');
+            resolve(str.substring(0, str.indexOf(' ')));
+        });
+        p.on('close', function(code) {
+            console.log('close', code);
+        });
+        p.stderr.on('data', function(d) {
+            console.log('stderr-data:', d);
+            reject(new Error(d.toString(d.toString('utf8'))));
+        });
+    });
+}
 
 const CRC32_XINIT = 0xFFFFFFFF;
 const CRC32_XOROT = 0xFFFFFFFF;
